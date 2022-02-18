@@ -39,8 +39,16 @@ def load_data_train(path):
     return dane
 
 
+def load_data_test(path):
+    dane = []
 
+    for a in os.listdir('../test/images'):
+        file = os.path.join('../test/images', a)
+        name = os.path.basename(file)
+        image = cv2.imread(file, cv2.IMREAD_COLOR)
+        dane.append({'image':image,'name':name})
 
+    return dane
 
 
 
