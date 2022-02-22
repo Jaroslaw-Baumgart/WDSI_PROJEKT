@@ -50,5 +50,17 @@ def load_data_test(path):
 
     return dane
 
-
+def learn_bovw(data):
+    dict_size = 128
+    bow = cv2.BOWKMeansTrainer(dict_size)
+    sift = cv2.SIFT_create()
+    for image in data:
+        image['image'] = cv2.cvtColor(image['image'], cv2.COLOR_BGR2GRAY)
+    for image in data:
+        kpoints = sift.detect(image['image'], None)
+        _, desc = sift.compute(image['image'], kpoints)
+        if desc is not None:
+            bow.add(desc)
+    vocabulary = bow.cluster()
+    np.save('voc.npy', vocabulary)
 
