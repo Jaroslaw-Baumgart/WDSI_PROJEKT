@@ -78,6 +78,20 @@ def extract_features(data):
         else:
             image.update({'desc': np.zeros((1, 128))})
     return data
+def train(data):
+    rf = RandomForestClassifier(128)
+    x_matrix = np.empty((1, 128))
+    y_vector = []
+    for image in data:
+        y_vector.append(image['ID'])
+        x_matrix = np.vstack((x_matrix, image['desc']))
+    rf.fit(x_matrix[1:], y_vector)
+    return rf
+
+def predict(rf, data):
+    for sample in data:
+        sample.update({'ID_pred': rf.predict(sample['desc'])[0]})
+    return data
 
 def main():
     train_data = load_data_train()
