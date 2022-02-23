@@ -7,49 +7,45 @@ import xml.etree.ElementTree as ET
 import pandas
 import os
 
-
-def load_data_train(path):
+#wczytanie obrazów do trenowania oraz wydobycie informacji z plików xml
+def load_data_train():
     dane = []
-
     for a in os.listdir('../train/images'):
-        file=os.path.join('../train/images',a) #name, type, ilość, kordynaty
-        name=os.path.basename(file)
-        name=name.split(sep='.')
-        name=name + '.xml'
-        xmlfile = os.path.join('../train/annotations',name)
-        tree= ET.parse(xmlfile)
-        root=tree.getroot()
-        name=root[1]
-
+        file = os.path.join('../train/images', a)
+        name = os.path.basename(file)
+        name = name.split(sep='.')
+        name = name[0] + '.xml'
+        xmlfile = os.path.join('../train/annotations', name)
+        tree = ET.parse(xmlfile)
+        root =tree.getroot()
+        name = root[1]
         iter = 4
         while iter is not len(root):
-            xmin=int(root[iter][5][0].text)
-            ymin=int(root[iter][5][1].text)
-            xmax=int(root[iter][5][2].text)
-            ymax=int(root[iter][5][3].text)
-            classID=root[iter][0].text
-            image=cv2.imread(file,cv2.IMREAD_COLOR)
-            if classID=='speedlimit' :
-                ID=1
+            x_min = int(root[iter][5][0].text)
+            y_min = int(root[iter][5][1].text)
+            x_max = int(root[iter][5][2].text)
+            y_max = int(root[iter][5][3].text)
+            classID = root[iter][0].text
+            image = cv2.imread(file, cv2.IMREAD_COLOR)
+            if classID == 'speedlimit' :
+                ID = 1
             else:
-                ID=0
-            dane=({'image':image[ymin:ymax,xmin:xmax],'name':name,'ID':ID})
+                ID = 0
+            dane.append({'image' : image[y_min:y_max, x_min:x_max], 'name' : name, 'ID' : ID})
             iter = iter + 1
-
     return dane
 
-
-def load_data_test(path):
+#wczytanie obrazów testowanych
+def load_data_test():
     dane = []
-
     for a in os.listdir('../test/images'):
         file = os.path.join('../test/images', a)
         name = os.path.basename(file)
         image = cv2.imread(file, cv2.IMREAD_COLOR)
-        dane.append({'image':image,'name':name})
-
+        dane.append({'image' : image, 'name' : name})
     return dane
 
+#stworzenie słownika
 def learn_bovw(data):
     dict_size = 128
     bow = cv2.BOWKMeansTrainer(dict_size)
@@ -64,6 +60,7 @@ def learn_bovw(data):
     vocabulary = bow.cluster()
     np.save('voc.npy', vocabulary)
 
+#wyznaczenie deskryptorów obrazów
 def extract_features(data):
     sift = cv2.SIFT_create()
     flann = cv2.FlannBasedMatcher_create()
@@ -78,6 +75,8 @@ def extract_features(data):
         else:
             image.update({'desc': np.zeros((1, 128))})
     return data
+
+#stworzenie random forest
 def train(data):
     rf = RandomForestClassifier(128)
     x_matrix = np.empty((1, 128))
@@ -88,6 +87,7 @@ def train(data):
     rf.fit(x_matrix[1:], y_vector)
     return rf
 
+#funckja określająca ID danych podanych w argumencie poprzez kwalifikację
 def predict(rf, data):
     for sample in data:
         sample.update({'ID_pred': rf.predict(sample['desc'])[0]})
