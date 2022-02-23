@@ -64,3 +64,18 @@ def learn_bovw(data):
     vocabulary = bow.cluster()
     np.save('voc.npy', vocabulary)
 
+def extract_features(data):
+    sift = cv2.SIFT_create()
+    flann = cv2.FlannBasedMatcher_create()
+    bow = cv2.BOWImgDescriptorExtractor(sift, flann)
+    vocabulary = np.load('voc.npy')
+    bow.setVocabulary(vocabulary)
+    for image in data:
+        kpoints = sift.detect(image['image'], None)
+        imgDes = bow.compute(image['image'], kpoints)
+        if imgDes is not None:
+            image.update({'desc': imgDes})
+        else:
+            image.update({'desc': np.zeros((1, 128))})
+    return data
+
