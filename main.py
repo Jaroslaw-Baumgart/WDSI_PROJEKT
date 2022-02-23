@@ -79,3 +79,25 @@ def extract_features(data):
             image.update({'desc': np.zeros((1, 128))})
     return data
 
+def main():
+    train_data = load_data_train()
+    test_data = load_data_test()
+    if os.path.isfile('voc.npy') != True:
+        learn_bovw(train_data)
+    train_data = extract_features(train_data)
+    rf = train(train_data)
+    com = input()
+    if com == 'classify':
+        n = int(input())
+        images = [[] for i in range(n)]
+        for i in range(n):
+            images[i] = ({'n' : 0, 'xy' : [], 'name' : ''})
+        for i in images:
+            i['name'] = input()
+            i['n'] = int(input())
+            i['xy'] = [[] for i in range(i['n'])]
+            for j in range(i['n']):
+                    i['xy'][j].append(input())
+    images_data = []
+if __name__ == '__main__':
+    main()
