@@ -99,5 +99,23 @@ def main():
             for j in range(i['n']):
                     i['xy'][j].append(input())
     images_data = []
+    for i in images:
+        for image in test_data:
+            if image['name'] == i['name']:
+                for j in range(i['n']):
+                    xmin = int(i['xy'][j][0].split(sep=' ')[0])
+                    xmax = int(i['xy'][j][0].split(sep=' ')[1])
+                    ymin = int(i['xy'][j][0].split(sep=' ')[2])
+                    ymax = int(i['xy'][j][0].split(sep=' ')[3])
+                    images_data.append({'image' : image['image'][ymin:ymax, xmin:xmax]})
+    images_data = extract_features(images_data)
+    images_data = predict(rf,images_data)
+    for i in images_data:
+        if i['ID_pred'] == 1:
+            print('speedlimit')
+        else:
+            print('other')
+    return
+
 if __name__ == '__main__':
     main()
